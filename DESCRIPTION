@@ -1,16 +1,20 @@
 Package: regchange
-Title: What the Package Does (One Line, Title Case)
+Title: Change point detection on regression parameters for high dimensional data
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Florencia",
+           family = "Leonardi",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+           email = "florencia@usp.br",
+           comment = c(ORCID = "0000-0002-0299-0680"))
+Description: This package contains functions to estimate the number and location of change-points on the regression coefficients of a linear regression model, with possibly many more covariables than sample points. 
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+URL: https://github.com/florencialeonardi/regchange
+BugReports: https://github.com/florencialeonardi/regchange/issues
+Imports: 
+    glmnet,
+    lars
