@@ -22,6 +22,7 @@ This is a basic example which shows you how to solve a common problem:
 ``` r
 library(regchange)
 x <- matrix(runif(300), ncol=3, nrow=100)
-y <- runif(100)
-#fit <- regchange(x,y)
+beta <- c(1,1,0)
+y <- x%*%beta+rnorm(100,0,0.1)
+fit <- regchange(x,y)
 ```
