@@ -39,9 +39,10 @@ regchange(
 a list containing the change point vector, a matrix with the regression parameters
 on each segment and a matrix with the residual sum of squares
 \describe{
-\item{\code{alpha}}{matrix of change-points}
-\item{\code{beta}}{matrix of regression coefficients}
-\item{\code{rss}}{matrix of sum of squared residuals}
+\item{\code{alpha}}{an array of dimension kmax x  kmax x length(lambda). For each value of lambda and number of segments j, the vector
+alpha[, 1:j, lambda] contains the change-point proportions with respect to the sample size n. }
+\item{\code{beta}}{a list of dimension kmax x length(lambda) containing in each entry the matrix of regression coefficients}
+\item{\code{rss}}{matrix of dimension kmax x length(lambda) with the sum of squared residuals for each model}
 }
 }
 \description{

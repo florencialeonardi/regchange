@@ -23,5 +23,5 @@ This is a basic example which shows you how to solve a common problem:
 library(regchange)
 x <- matrix(runif(300), ncol=3, nrow=100)
 y <- runif(100)
-fit <- regchange(x,y)
+#fit <- regchange(x,y)
 ```
