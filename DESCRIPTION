@@ -1,12 +1,8 @@
 Package: regchange
 Title: Change point detection on regression parameters for high dimensional data
 Version: 0.0.0.9000
-Authors@R: 
-    person(given = "Florencia",
-           family = "Leonardi",
-           role = c("aut", "cre"),
-           email = "florencia@usp.br",
-           comment = c(ORCID = "0000-0002-0299-0680"))
+Authors@R: c(person("Florencia", "Leonardi", role = c("aut", "cre"), email = "florencia@usp.br"),
+    person("Peter", "Bühlmann", role=c("aut")))
 Description: This package contains functions to estimate the number and location of change-points on the regression coefficients of a linear regression model, with possibly many more covariables than sample points. 
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -17,4 +13,9 @@ URL: https://github.com/florencialeonardi/regchange
 BugReports: https://github.com/florencialeonardi/regchange/issues
 Imports: 
     glmnet,
-    lars
+    lars,
+    doParallel,
+    foreach,
+    iterators, 
+    parallel,
+    data.tree
