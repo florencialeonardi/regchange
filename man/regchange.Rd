@@ -20,9 +20,9 @@ regchange(
 )
 }
 \arguments{
-\item{x}{matrix of covariates of dimension nxp}
+\item{x}{matrix of covariates of dimension \code{nxp}}
 
-\item{y}{response vector of length n}
+\item{y}{response vector of length \code{n}}
 
 \item{algorithm}{either \code{"exact"}  for the dynamic programming algorithm or \code{"binary"} for the approximate binary segmentation
 algorithm}
@@ -49,14 +49,17 @@ algorithm}
 a list containing the change point vector, a matrix with the regression parameters
 on each segment and a matrix with the residual sum of squares for each value of \code{lambda} and number of considered
 segments in the model
-\item{alpha}{an array of dimension kmax x  kmax x length(lambda). For each value of lambda and number of segments j, the vector
-alpha[, 1:j, lambda] contains the change-point proportions with respect to the sample size n. }
-\item{beta}{a list of dimension kmax x length(lambda) containing in each entry the matrix of regression coefficients}
-\item{rss}{matrix of dimension kmax x length(lambda) with the sum of squared residuals for each model}
+\item{alpha}{an array of dimension \code{kmax x  kmax x length(lambda)}. For each value of \code{lambda} and number of
+segments \code{j}, the vector \code{alpha[, 1:j, lambda]} contains the change-point proportions with
+respect to the sample size \code{n}. }
+\item{beta}{a list of dimension \code{kmax x length(lambda)} containing in each entry the matrix of regression coefficients}
+\item{rss}{matrix of dimension \code{kmax x length(lambda)} with the sum of squared residuals for each model}
 }
 \description{
 This function fits a linear regression model with change-points in the regression coefficients by a regularized
-least squares criterion. The algorithm computes the exact solution by using a dynamic programming approach.
+least squares criterion.
+The algorithm computes the exact solution by using a dynamic programming approach or a local optimum
+by a binary segmentation method.
 }
 \examples{
 x <- matrix(runif(150), ncol=3, nrow=50)
