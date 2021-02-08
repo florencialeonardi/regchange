@@ -42,7 +42,7 @@
 #' \href{https://arxiv.org/abs/1601.03704}{arXiv:1601.03704}
 #'
 #'
-regchange <- function(x, y, algorithm=c("exact", "binary"), kmax=5, gamma=0.01,
+regchange <- function(x, y, algorithm="exact", kmax=5, gamma=0.01,
                       lambda=seq(1,0.01,-0.01), delta=0.0, depth=3, intercept=TRUE,
                       train=seq(1,length(y)), subs = seq(1,length(y)),
                       type="glmnet")
@@ -53,14 +53,12 @@ regchange <- function(x, y, algorithm=c("exact", "binary"), kmax=5, gamma=0.01,
     print("error: for compatibility of the results, train must contain the last observation in the sample")
     return()
   }
-  p <- ncol(x)
   xt <- x[train,,drop=FALSE]
   yt <- y[train]
-  nmin <- max(as.integer(n*delta),2)
   if (kmax > min(n, length(subs))) {
     print("error: kmax can not be bigger than the training sample size or the considered subsequence")
     return()
-    }
+  }
   else segmax <- kmax
   ## check if subsequence is a subset of train
   if ( !all(subs %in% train) ){
@@ -71,95 +69,14 @@ regchange <- function(x, y, algorithm=c("exact", "binary"), kmax=5, gamma=0.01,
     if ( subs[length(subs)] < nrow(x) ){
       subs <- c(subs, nrow(x)) #add last training point in subs
     }
-    ## compute rss array for the lambda sequence
-    m <- length(subs)
-    dev_fit <- array(Inf,dim=c(m,m,length(lambda)))
-    for(i in 1:(m-1)){
-      for (j in (i+1):m){
-        if( (subs[j]-subs[i]+1) >= nmin ){
-          if (type=="glmnet") {
-            fit <- glmnet::glmnet(xt[subs[i]:subs[j],,drop=FALSE],yt[subs[i]:subs[j]],intercept=intercept)
-            dev_fit[i,j,] <- apply((yt[subs[i]:subs[j]]-glmnet::predict.glmnet(fit,xt[subs[i]:subs[j],,drop=FALSE],s=lambda))^2/n,2,sum)
-          }
-          else if(type=="lars") {
-            fit <- lars::lars(xt[subs[i]:subs[j],,drop=FALSE],yt[subs[i]:subs[j]],intercept=intercept)
-            dev_fit[i,j,] <- apply(as.matrix((yt[subs[i]:subs[j]]-lars::predict.lars(fit,xt[subs[i]:subs[j],,drop=FALSE],s=lambda,mode="lambda")$fit)^2/n),2,sum)
-          }
-          else {
-            print("No valid method selected")
-            return()
-          }
-        }
+    if( algorithm=="exact" ) outlist <- dynamic_segmentation(xt,yt,segmax,gamma,lambda,delta,intercept,subs,type)
+    else {
+      if ( algorithm=="binary") outlist <- binalg(xt,yt,gamma,lambda,delta,depth,intercept,subs)
+      else {
+        print("error: algorithm must be set to'exact' or 'binary'")
+        return()
       }
     }
-    ## create output objects
-    rss_mat <- c()
-    alpha_mat <- array(dim=c(segmax,segmax,length(lambda)))
-    beta_mat <-  vector(length=segmax*length(lambda))
-    beta_mat <- as.list(beta_mat)
-    dim(beta_mat) <- c(segmax,length(lambda))
-    ## compute rss, alpha and beta for each value of lambda
-    zaux <- matrix(nrow=segmax,ncol=n)
-    raux <- matrix(nrow=segmax-1,ncol=n)
-    for ( lm in 1:length(lambda) ){
-      zaux[1,] <- dev_fit[1,,lm]
-      if ( segmax > 1){
-        for(k in 2:segmax){
-          for(j in k:n){
-            vec <- c()
-            for(i in k:j){
-              vec <- c(vec,zaux[k-1,i-1]+dev_fit[i,j,lm])
-            }
-            zaux[k,j] <- min(vec)
-            raux[k-1,j] <- which.min(vec) + k - 2
-          }
-        }
-      }
-      rss_mat <- cbind(rss_mat, zaux[,n])
-      for (k in segmax:1){
-        alpha_mat[k,k,lm] <- n
-        beta_aux <- c()
-        if ( k > 1 ) {
-          for(j in (k-1):1){
-            alpha_mat[k,j,lm] <- subs[raux[j,alpha_mat[k,j+1,lm]]]
-            segi <- alpha_mat[k,j,lm]+1
-            segf <- alpha_mat[k,j+1,lm]
-            if (type=="glmnet") {
-              fit <- glmnet::glmnet(xt[segi:segf,,drop=FALSE],yt[segi:segf],intercept=intercept)
-              beta_aux <- cbind(glmnet::coef.glmnet(fit,s=lambda[lm]),beta_aux)
-            }
-            else if(type=="lars") {
-              fit <- lars::lars(xt[segi:segf,,drop=FALSE],yt[segi:segf],intercept=intercept)
-              a0 <- lars::predict.lars(fit,t(rep(0,p)), s=lambda[lm],mode="lambda")$fit
-              beta_aux <- cbind(c(a0,lars::coef.lars(fit,s=lambda[lm],mode="lambda")),beta_aux)
-            }
-          }
-        }
-        segi <- 1
-        segf <- alpha_mat[k,1,lm]
-        if (type=="glmnet") {
-          fit <- glmnet::glmnet(xt[segi:segf,,drop=FALSE],yt[segi:segf],intercept=intercept)
-          beta_aux <- cbind(glmnet::coef.glmnet(fit,s=lambda[lm]),beta_aux)
-        }
-        else {
-          fit <- lars::lars(xt[segi:segf,,drop=FALSE],yt[segi:segf],intercept=intercept)
-          a0 <- lars::predict.lars(fit,t(rep(0,p)), s=lambda[lm],mode="lambda")$fit
-          beta_aux <- cbind(c(a0,lars::coef.lars(fit,s=lambda[lm],mode="lambda")),beta_aux)
-        }
-        beta_mat[[k,lm]] <- beta_aux
-      }
-    }
-    #  rescale alpha if length(train)<nrow(x)
-    if(n < nrow(x)){
-      for(lm in 1:length(lambda)){
-        alpha_mat[1,1,lm] <- nrow(x)
-        for(k in 2:segmax){
-          alpha0 <- c(train[alpha_mat[k,1:(k-1),lm]],nrow(x))
-          alpha_mat[k,1:k,lm] <- alpha0
-        }
-      }
-    }
-    outlist <- list(alpha=alpha_mat/nrow(x), beta=beta_mat, rss=rss_mat)
-    outlist
   }
+  outlist
 }

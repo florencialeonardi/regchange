@@ -30,7 +30,7 @@ hieralg.tree <- function(x,y,n,lambda,findex,tree,threshold,max.depth)
   tree
 }
 
-binalg <- function(x,y,lambda,gamma,max.depth,intercept=TRUE)
+binalg <- function(x,y,gamma,lambda,delta,max.depth,intercept,subs)
 {
   ncores <- parallel::detectCores()
   cl <- parallel::makeCluster(ncores, outfile="")
@@ -46,6 +46,8 @@ binalg <- function(x,y,lambda,gamma,max.depth,intercept=TRUE)
   df.tree <- data.tree::ToDataFrameTree(tree,"loglike","gamma","seg.left","seg.right","depth")
   parallel::stopCluster(cl)
 }
+
+
 
 
 

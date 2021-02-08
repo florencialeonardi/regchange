@@ -7,7 +7,7 @@
 regchange(
   x,
   y,
-  algorithm = c("exact", "binary"),
+  algorithm = "exact",
   kmax = 5,
   gamma = 0.01,
   lambda = seq(1, 0.01, -0.01),
